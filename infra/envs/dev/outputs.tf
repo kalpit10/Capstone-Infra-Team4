@@ -20,3 +20,13 @@ output "alb_sg_id" {
   value       = module.vpc.alb_sg_id
   description = "Security group ID for ALB"
 }
+
+output "ecr_repository_names" {
+  description = "ECR repository names in the dev environment"
+  value       = module.ecr.repository_names
+}
+
+output "ecr_repo_urls" {
+  value       = module.ecr.repository_uris
+  description = "ECR repository URLs"
+}
