@@ -6,7 +6,7 @@ module "vpc" {
 module "ecr" {
   source = "../../../modules/ecr"
 
-  repo_names = ["capstone-proshop-frontend", "capstone-proshop-api", "capstone-proshop-nginx"]
+  repo_names = ["capstone-proshop-frontend", "capstone-proshop-backend", "capstone-proshop-nginx"]
 
   // Image Scanning for vulnerabilities on push
   image_scan      = true
