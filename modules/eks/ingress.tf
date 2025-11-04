@@ -1,5 +1,7 @@
 ###############################################
 # INGRESS RESOURCE - AWS ALB CONTROLLER
+# What is an Ingress Resource? 
+# An Ingress Resource in Kubernetes is a set of rules for the inbound traffic to reach your services. It provides HTTP and HTTPS routing to services based on defined rules.
 # This file will create an Ingress resource that will create a load balancer in front of our services.
 # The ALB created will route traffic to the appropriate services based on the rules defined in the Ingress resource.
 # It routes traffic from ALB → Kubernetes Service → Pods.

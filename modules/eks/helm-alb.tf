@@ -138,3 +138,25 @@ resource "helm_release" "alb_controller" {
   ]
 }
 
+###############################################
+# HELM RELEASE FOR METRICS SERVER
+# Metrics Server is a cluster-wide aggregator of resource usage data.
+# It collects metrics like CPU and memory usage from the kubelets and exposes them via the Kubernetes API.
+# This data is used by components like the Horizontal Pod Autoscaler to make scaling decisions.   
+###############################################
+resource "helm_release" "metrics_server" {
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+  version    = "3.12.2"
+  values = [yamlencode({
+    # Enable insecure TLS for kubelet communication
+    # This is necessary if your kubelets are using self-signed certificates or if there are certificate issues.
+    # In simple terms, it allows Metrics Server to communicate with kubelets without strict TLS verification.
+    # What is TLS? Transport Layer Security (TLS) is a cryptographic protocol that provides secure communication over a computer network.
+    args = [
+      "--kubelet-insecure-tls=true"
+    ]
+  })]
+}
