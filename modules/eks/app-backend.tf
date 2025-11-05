@@ -118,11 +118,66 @@ resource "kubernetes_deployment" "backend" {
               name = kubernetes_secret.backend_env.metadata[0].name
             }
           }
+
+          # Resource definitions for the backend container for resource management.
+          resources {
+            # requests define the minimum resources required for the container to run
+            requests = {
+              cpu    = "100m"  # minimum CPU the pod expects (0.1 core or 0.1vCPU)
+              memory = "256Mi" # minimum memory the pod expects (Mi is Mebibytes => 1Mi = 1.048576 MB)
+            }
+            # limits define the maximum resources the container can use
+            limits = {
+              cpu    = "250m"  # maximum CPU the pod can use (0.25 core or 0.25vCPU)
+              memory = "512Mi" # maximum memory the pod can use (Mi is Mebibytes => 1Mi = 1.048576 MB)
+            }
+
+          }
         }
       }
     }
   }
 }
+
+###############################################
+# BACKEND HPA ( Horizontal Pod Autoscaler )
+# This HPA automatically scales the number of backend pods based on CPU utilization
+###############################################
+
+resource "kubernetes_horizontal_pod_autoscaler_v2" "backend_hpa" {
+  metadata {
+    name      = "backend-hpa"
+    namespace = "proshop"
+  }
+
+  spec {
+    # What is Scale Target Ref? It specifies the target resource (deployment) that the HPA will monitor and scale.
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment.backend.metadata[0].name
+    }
+
+    min_replicas = 1
+    max_replicas = 3
+
+    # This block defines the metric based on which the HPA will scale the backend deployment
+    metric {
+      type = "Resource"
+
+      resource {
+        # Specifies that we are scaling based on CPU utilization
+        name = "cpu"
+        target {
+          type                = "Utilization"
+          average_utilization = 70
+        }
+      }
+    }
+  }
+}
+
+
 
 ###############################################
 # BACKEND SERVICE
