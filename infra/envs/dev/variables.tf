@@ -1,39 +1,25 @@
-variable "cluster_name" {
-  description = "Name of the EKS cluster"
+variable "env" {
+  description = "Environment name (dev or prod)"
   type        = string
 }
 
-variable "subnet_ids" {
-  description = "List of subnet IDs for the EKS cluster"
-  type        = list(string)
-}
-
-variable "region" {
-  description = "AWS region to deploy the EKS cluster"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "vpc_id" {
-  description = "VPC ID where the EKS cluster is deployed"
+variable "name_prefix" {
+  description = "Prefix for resource names"
   type        = string
 }
 
-
-# --- Node scaling ---
-variable "node_desired_size" {
-  description = "Desired number of worker nodes"
-  type        = number
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
 }
 
-variable "node_min_size" {
-  description = "Minimum number of worker nodes"
-  type        = number
-}
-
-variable "node_max_size" {
-  description = "Maximum number of worker nodes"
-  type        = number
+variable "subnets" {
+  description = "Subnet definitions for this environment"
+  type = map(object({
+    cidr = string
+    az   = string
+    tier = string
+  }))
 }
 
 # --- Backend deployment ---
@@ -97,7 +83,11 @@ variable "frontend_mem_limit" {
 }
 
 
-# --- ECR Repositories ---
+variable "backend_secret_id" {
+  description = "Name or ARN of the Secrets Manager secret for backend environment variables"
+  type        = string
+}
+
 variable "backend_image_repo" {
   description = "ECR repository name for backend image"
   type        = string
@@ -108,16 +98,23 @@ variable "frontend_image_repo" {
   type        = string
 }
 
-
-
-# --- ALB ---
-variable "alb_name" {
-  description = "Name for the AWS Application Load Balancer"
-  type        = string
+# --- Node scaling ---
+variable "node_desired_size" {
+  description = "Desired number of worker nodes"
+  type        = number
 }
 
+variable "node_min_size" {
+  description = "Minimum number of worker nodes"
+  type        = number
+}
 
-variable "backend_secret_id" {
-  description = "Name or ARN of the Secrets Manager secret for backend environment variables"
+variable "node_max_size" {
+  description = "Maximum number of worker nodes"
+  type        = number
+}
+
+variable "alb_name" {
+  description = "Name for the AWS Application Load Balancer"
   type        = string
 }

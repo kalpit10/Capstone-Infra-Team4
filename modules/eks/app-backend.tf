@@ -8,10 +8,12 @@ resource "kubernetes_namespace" "proshop" {
 
 }
 
+
 # Read existing secret from AWS Secrets Manager
 data "aws_secretsmanager_secret_version" "backend" {
-  secret_id = "proshop/backend"
+  secret_id = var.backend_secret_id
 }
+
 
 # Decode JSON into a Terraform map
 # What's a terraform map? It's a collection of key-value pairs in json format.
@@ -81,7 +83,7 @@ resource "kubernetes_deployment" "backend" {
   # Spec is the specification of the desired behavior of the deployment
   spec {
     # Requesting 1 replica of the backend pod in development environment.
-    replicas = 1
+    replicas = var.backend_replicas
     # Selector is used to identify the pods managed by this deployment
     selector {
       match_labels = {
@@ -104,7 +106,8 @@ resource "kubernetes_deployment" "backend" {
         container {
           name = "backend"
           # ECR backend image that we pushed earlier is going to be used to run this backend container.
-          image = "${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/capstone-proshop-backend:latest"
+          image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.backend_image_repo}:latest"
+
 
           port {
             container_port = 5000
@@ -123,13 +126,13 @@ resource "kubernetes_deployment" "backend" {
           resources {
             # requests define the minimum resources required for the container to run
             requests = {
-              cpu    = "100m"  # minimum CPU the pod expects (0.1 core or 0.1vCPU)
-              memory = "256Mi" # minimum memory the pod expects (Mi is Mebibytes => 1Mi = 1.048576 MB)
+              cpu    = var.backend_cpu_request # minimum CPU the pod expects (0.1 core or 0.1vCPU)
+              memory = var.backend_mem_request # minimum memory the pod expects (Mi is Mebibytes => 1Mi = 1.048576 MB)
             }
             # limits define the maximum resources the container can use
             limits = {
-              cpu    = "250m"  # maximum CPU the pod can use (0.25 core or 0.25vCPU)
-              memory = "512Mi" # maximum memory the pod can use (Mi is Mebibytes => 1Mi = 1.048576 MB)
+              cpu    = var.backend_cpu_limit # maximum CPU the pod can use (0.25 core or 0.25vCPU)
+              memory = var.backend_mem_limit # maximum memory the pod can use (Mi is Mebibytes => 1Mi = 1.048576 MB)
             }
 
           }
@@ -158,8 +161,8 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "backend_hpa" {
       name        = kubernetes_deployment.backend.metadata[0].name
     }
 
-    min_replicas = 1
-    max_replicas = 3
+    min_replicas = var.backend_hpa_min
+    max_replicas = var.backend_hpa_max
 
     # This block defines the metric based on which the HPA will scale the backend deployment
     metric {

@@ -89,10 +89,14 @@ resource "kubernetes_service_account" "alb_sa" {
 ###############################################
 
 resource "helm_release" "alb_controller" {
-  name       = "aws-load-balancer-controller"
+  // name can be anything, but it is good practice to use the chart name
+  name = "aws-load-balancer-controller"
+  // repository is the URL where the Helm chart is located
   repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  namespace  = "kube-system"
+  // chart is the name of the Helm chart to install
+  chart = "aws-load-balancer-controller"
+  // namespace where the chart will be installed
+  namespace = "kube-system"
 
   # wait up to 5 minutes for Helm to finish
   timeout = 300
@@ -103,7 +107,10 @@ resource "helm_release" "alb_controller" {
   # If true, Helm will delete the release on failure
   cleanup_on_fail = true
 
+
   # set is used to pass values to the Helm chart
+  # What values are we passing? Configuration options for the ALB controller
+  # They override the default values in the chart
   set {
     name  = "clusterName"
     value = var.cluster_name
@@ -150,6 +157,7 @@ resource "helm_release" "metrics_server" {
   chart      = "metrics-server"
   namespace  = "kube-system"
   version    = "3.12.2"
+  wait       = true
   values = [yamlencode({
     # Enable insecure TLS for kubelet communication
     # This is necessary if your kubelets are using self-signed certificates or if there are certificate issues.
