@@ -43,10 +43,11 @@ resource "aws_eks_node_group" "this" {
 
   # Starts 2 node, scales to 3 if needed
   scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 1
+    desired_size = var.node_desired_size
+    max_size     = var.node_max_size
+    min_size     = var.node_min_size
   }
+
 
   # t3.small is 2 vCPU and 2 GiB RAM, suitable for general-purpose workloads
   instance_types = ["t3.small"]

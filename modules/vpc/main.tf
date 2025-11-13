@@ -1,13 +1,13 @@
 ######### VPC BLOCK ##########
 resource "aws_vpc" "this" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name    = "capstone-team4-dev-vpc"
+    Name    = "${var.name_prefix}-${var.env}-vpc"
     Project = "Capstone"
-    Env     = "dev"
+    Env     = var.env
     Owner   = "Team4"
   }
 }
@@ -48,6 +48,7 @@ resource "aws_internet_gateway" "this" {
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
+  # Attach internet gateway to public route table
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.this.id
@@ -101,7 +102,9 @@ resource "aws_nat_gateway" "this" {
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
+  # Route from private subnets to NAT Gateway for internet access
   route {
+    # This tells traffic to go to internet via NAT
     cidr_block     = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.this.id
   }
@@ -161,6 +164,7 @@ resource "aws_security_group" "nodes" {
   vpc_id      = aws_vpc.this.id
 
   # Inbound: allow ALB → nodes (K8s will map Service to NodePort range)
+  # We allowed from port 0 to 65535 to cover all NodePort possibilities
   ingress {
     description     = "Traffic from ALB SG"
     from_port       = 0

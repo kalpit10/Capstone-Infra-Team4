@@ -189,9 +189,6 @@ resource "aws_iam_role_policy_attachment" "alb_controller_attach" {
 
 #####################################################################################
 
-
-data "aws_caller_identity" "current" {}
-
 resource "aws_iam_policy" "backend_secrets_read" {
   name        = "proshop-backend-secrets-read"
   description = "Allow backend pods to read proshop/backend secret"
@@ -207,7 +204,8 @@ resource "aws_iam_policy" "backend_secrets_read" {
         ]
         # This block actually tells us which secret the policy applies to.
         # It applies to any secret that starts with "proshop/backend-" in the current AWS account and region.
-        Resource = "arn:aws:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:proshop/backend-*"
+        Resource = "arn:aws:secretsmanager:us-east-1:${data.aws_caller_identity.current.account_id}:secret:${var.backend_secret_id}-*"
+
       }
     ]
   })

@@ -23,7 +23,7 @@ resource "kubernetes_ingress_v1" "proshop_ingress" {
       "kubernetes.io/ingress.class"                  = "alb"
       "alb.ingress.kubernetes.io/scheme"             = "internet-facing" // Makes the ALB public
       "alb.ingress.kubernetes.io/target-type"        = "ip"              // Targets are pods (IP addresses)
-      "alb.ingress.kubernetes.io/load-balancer-name" = "proshop-alb"
+      "alb.ingress.kubernetes.io/load-balancer-name" = var.alb_name
       "alb.ingress.kubernetes.io/listen-ports"       = "[{\"HTTP\":80}]" // Listens on port 80 for HTTP
       "alb.ingress.kubernetes.io/healthcheck-path"   = "/"               // Health check path
     }
