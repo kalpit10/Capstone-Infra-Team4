@@ -1,572 +1,908 @@
-**Capstone: Cloud-Native E-Commerce Deployment on AWS (Infrastructure
-Repository)**
+# 🛒 Capstone: Cloud-Native E-Commerce Deployment on AWS
 
-**Team 4 --- DevOps-Focused Cloud Architecture Project**
+### **Infrastructure Repository – Team 4, Seneca Polytechnic (Cloud Architecture & Administration)**
 
-**This repository contains the entire Infrastructure-as-Code (IaC) for
-deploying the ProShop v2 MERN e-commerce application on a fully
-automated production-grade AWS environment using:**
+This repository contains the **entire Infrastructure-as-Code (IaC)** used to deploy the **ProShop v2 MERN e-commerce application** onto AWS using a fully automated, production-style cloud architecture.
 
-- **Terraform Modules**
+The deployment is built with:
 
-- **Amazon EKS (Kubernetes)**
+- **Terraform** (modular, reusable IaC)
+- **Amazon EKS** (Kubernetes cluster)
+- **Amazon ECR** (Docker image registry)
+- **GitHub Actions OIDC** (secure CI/CD pipelines)
+- **AWS Secrets Manager** (secure and encrypted secret storage)
+- **Kubernetes Horizontal Pod Autoscaling (HPA)**
+- **AWS Load Balancer Controller + Ingress**
+- **Amazon CloudWatch Dashboards & Logs**
 
-- **Amazon ECR (Container Registry)**
+This project focuses **only on infrastructure and DevOps**, not on writing or modifying the MERN application itself.  
+Everything is written in a simple, beginner-friendly style while following real industry best practices.
 
-- **Application Load Balancer (Ingress Controller)**
+---
 
-- **GitHub Actions OIDC CI/CD**
+## 📦 What This Project Is About
 
-- **AWS Secrets Manager + IRSA**
+This capstone demonstrates how to deploy a real, production-style e-commerce platform using:
 
-- **Horizontal Pod Autoscaling (HPA)**
+- Containers
+- Kubernetes
+- AWS cloud services
+- Modern DevOps automation
 
-- **CloudWatch Dashboards & Logs**
+The project reflects how a real company runs and scales applications using microservices, CI/CD pipelines, and secure secret management.
 
-**This README explains everything in beginner-friendly language while
-documenting each system, tool, module, and deployment process in
-detail.**
+---
 
-**📁 Repository Structure**
+### 🧩 **Application Components**
+
+- **Frontend:** React (served via Nginx container)
+- **Backend:** Node.js + Express
+- **Database:** MongoDB Atlas (managed, external database)
+- **Payments:** PayPal Sandbox API
+
+---
+
+## 🛠️ What This Repository Does
+
+This infrastructure repository is responsible for:
+
+### ✔️ **1. Creating all cloud resources**
+
+For both **development** and **production**, including:
+
+- VPCs
+- Subnets
+- Route tables
+- Security groups
+- NAT gateway
+- ECR Repositories
+- EKS cluster
+- Node groups
+- IAM Roles + OIDC
+- ... and many more
+
+### ✔️ **2. Deploying the Application to EKS**
+
+Terraform provisions the cluster and then automatically deploys:
+
+- Frontend deployment
+- Backend deployment
+- Kubernetes services
+- Ingress routing
+
+### ✔️ **3. Automating CI/CD**
+
+Using GitHub Actions OIDC:
+
+- Build Docker images
+- Push to Amazon ECR
+
+### ✔️ **4. Managing Secrets Securely**
+
+- AWS Secrets Manager stores sensitive configuration
+- IRSA allows pods to read secrets with **no static credentials**
+
+### ✔️ **5. Enabling Auto-Scaling**
+
+- Horizontal Pod Autoscaler manages frontend + backend replicas
+- Metrics Server provides CPU metrics
+
+### ✔️ **6. Routing Traffic with ALB**
+
+- AWS Load Balancer Controller creates ALB
+- Ingress rules route traffic to frontend + backend pods
+
+### ✔️ **7. Setting Up Monitoring**
+
+- CloudWatch logs for pods
+- CloudWatch dashboards for cluster + application visibility
+
+### 🚀 Final Outcome
+
+This repository delivers a **complete, end-to-end, cloud-native deployment pipeline** for a MERN e-commerce application:
+
+- Fully automated provisioning
+- Secure and scalable Kubernetes cluster
+- Continuous deployment using GitHub Actions
+- Production-ready infrastructure
+- Clear separation between **dev** and **prod**
+- Real-world cloud engineering and DevOps workflows
+
+All powered by Terraform and AWS.
+
+---
+
+## 🧮 Budget Estimate – Development Environment
+
+| **Component**                               | **Quantity / Configuration** | **Unit Price (USD)** | **Estimated Monthly Cost** |
+| ------------------------------------------- | ---------------------------- | -------------------- | -------------------------- |
+| **EKS Control Plane Fee**                   | 1 cluster × 720 hrs          | $0.10/hr             | $72.00                     |
+| **Worker Nodes (EC2 t3.small)**             | 2 nodes × 720 hrs            | $0.0208/hr           | $29.95                     |
+| **NAT Gateway & Data Transfer (approx)**    | 1 NAT + modest traffic       | Estimate ~ $30       | ~$30.00                    |
+| **ECR & Storage & Other Services (approx)** | Basic usage                  | Estimate ~ $10       | ~$10.00                    |
+| **Estimated Monthly Total (Dev)**           | —                            | —                    | **~ $141.95 (~$140)**      |
+
+**Note:** Dev uses smaller nodes and lower replicas. Additional charges may include:  
+Load balancer hourly fees, EBS volume storage, inter-AZ data transfer, CloudWatch logs, etc.
+
+---
+
+## 📊 Budget Estimate – Production Environment
+
+| **Component**                                     | **Quantity / Configuration**   | **Unit Price (USD)** | **Estimated Monthly Cost** |
+| ------------------------------------------------- | ------------------------------ | -------------------- | -------------------------- |
+| **EKS Control Plane Fee**                         | 1 cluster × 720 hrs            | $0.10/hr             | $72.00                     |
+| **Worker Nodes (EC2 t3.small or larger)**         | 3 nodes × 720 hrs              | $0.0208/hr ×3        | $44.93                     |
+| **Load Balancer + Ingress + Public ALB**          | 1 ALB (hourly + data transfer) | Estimate ~ $30       | ~$30.00                    |
+| **NAT Gateway & Private Subnets (higher usage)**  | 1 NAT + more outbound traffic  | Estimate ~ $40       | ~$40.00                    |
+| **ECR & Storage & Image Scanning (high traffic)** | Higher usage than dev          | Estimate ~ $20       | ~$20.00                    |
+| **Monitoring & CloudWatch Dashboards**            | Increased logs + metrics usage | Estimate ~ $15       | ~$15.00                    |
+| **Estimated Monthly Total (Prod)**                | —                              | —                    | **~ $221.93 (~$220–$230)** |
+
+**Note:** Prod uses more nodes, higher traffic, and full HA configuration. Additional cost may include:  
+Multi-AZ NAT, extra load balancers, higher log retention, EBS volumes, increased data transfer, etc.
+
+---
+
+### 📌 Key Assumptions & Notes
+
+- **Region:** US East (N. Virginia) pricing.
+- **Worker node type:** t3.small (2 vCPU, 2 GiB RAM). Larger node types (t3.medium, m5.large, etc.) increase cost.
+- **EKS control plane:** $0.10/hr for standard support. Older Kubernetes versions in extended support cost **$0.60/hr**.
+- **NAT Gateway cost:** Highly dependent on outbound traffic. Provided value is an estimate.
+- **Load Balancer cost:** Influenced by hourly usage and data processing.
+- **ECR costs:** Vary based on storage size, scan frequency, and repository traffic.
+- Estimates **do not include**:
+  - MongoDB Atlas
+  - Route 53 / domain registration
+  - Reserved Instances / Savings Plans
+  - Third-party services
+
+---
+
+### 🔍 Summary
+
+- **Dev Environment (~$140/month)**  
+  Suitable for testing, CI/CD experimentation, and low-traffic demos.
+
+- **Prod Environment (~$220–$230/month)**  
+  Appropriate for a production-style architecture with high availability, autoscaling, monitoring, and greater traffic expectations.
+
+**Note:** Actual AWS costs may vary based on region, traffic patterns, data transfer usage, instance types, and log retention settings. These estimates represent a baseline for typical low-to-moderate usage and should be validated using the AWS Pricing Calculator for your specific workload.
+
+---
+
+## 🔄 Cost-Optimized Production Alternatives
+
+To make this architecture more affordable while still keeping it production-ready, here are the best long-term optimization strategies:
+
+---
+
+### **1. Replace NAT Gateway with VPC Endpoints**
+
+NAT Gateway is one of the most expensive components in the architecture.  
+You can dramatically reduce cost by removing the NAT and using **VPC Interface Endpoints** for:
+
+- ECR (API + DKR)
+- S3 Gateway Endpoint
+- CloudWatch Logs
+- CloudWatch Metrics
+- Secrets Manager
+- STS
+
+**Result:**  
+Private subnets retain AWS access without paying $30–$50/month for NAT.
+
+---
+
+### **2. Right-Size & Mix Worker Nodes**
+
+Choose smaller worker node types or mix instance classes:
+
+- Use `t3.small` or `t3.medium` where possible
+- Introduce **Spot Instances** for frontend workloads
+- Keep only backend-critical workloads on On-Demand nodes
+
+**Result:**  
+Compute cost drops significantly while keeping performance.
+
+---
+
+### **3. Use One ALB with Routing Rules**
+
+Avoid multiple load balancers unless absolutely required.  
+A single ALB can easily route:
+
+- `/*` → frontend
+- `/api/*` → backend
+
+**Result:**  
+Saves ~$20–$30 per month and simplifies the architecture.
+
+---
+
+### **4. Reduce Log Retention**
+
+CloudWatch charges can spike over time.
+
+Recommended retention:
+
+- **Dev:** 7–14 days
+- **Prod:** 30 days
+
+**Result:**  
+Lower storage cost and easier log management.
+
+---
+
+### **5. Prune ECR Images**
+
+Old images accumulate quickly.  
+Use lifecycle rules to keep only:
+
+- Latest 10 tagged images
+- Delete untagged images after 7 days
+
+**Result:**  
+Lower ECR storage cost and cleaner registry.
+
+---
+
+## 💰 Cost Reduction Estimate
+
+If the above optimizations are applied:
+
+- **Total cost reduction:** ~45–60%
+- **Major savings from:**
+  - Removing NAT Gateway
+  - Downsizing worker nodes
+  - Adding Spot instances
+  - Reducing unnecessary storage (ECR + logs)
+
+This produces a **much more cost-efficient**, clean, and still **production-grade** Kubernetes environment.
+
+---
+
+## 📁 Repository Structure\*\*
 
 ```
-CAPSTONE-INFRA-TEAM4
+CAPSTONE-INFRA-TEAM4/
 │
 ├── .github/workflows/
-│ └── terraform.yml # CI pipeline: fmt, validate, plan on PRs
+│   └── terraform.yml                 # CI: fmt, validate, plan on `PRs` and `merges` in main branch
 │
 ├── infra/
-│ └── envs/
-│ ├── dev/ # Development environment Terraform root
-│ │ ├── main.tf
-│ │ ├── dev.tfvars
-│ │ ├── outputs.tf
-│ │ ├── variables.tf
-│ │ └── versions.tf
-│ │
-│ └── prod/ # Production environment Terraform root
-│ ├── main.tf
-│ ├── prod.tfvars
-│ ├── outputs.tf
-│ ├── variables.tf
-│ └── versions.tf
+│   └── envs/
+│       ├── dev/                      # Development environment
+│       │   ├── main.tf
+│       │   ├── dev.tfvars
+│       │   ├── outputs.tf
+│       │   ├── variables.tf
+│       │   └── versions.tf
+│       │
+│       └── prod/                     # Production environment
+│           ├── main.tf
+│           ├── prod.tfvars
+│           ├── outputs.tf
+│           ├── variables.tf
+│           └── versions.tf
 │
 ├── modules/
-│ ├── ecr/ # ECR (container registry) module
-│ │ ├── main.tf
-│ │ ├── outputs.tf
-│ │ ├── variables.tf
-│ │ └── versions.tf
-│ │
-│ ├── eks/ # Complete EKS cluster + apps module
-│ │ ├── app-backend.tf
-│ │ ├── app-frontend.tf
-│ │ ├── data.tf
-│ │ ├── helm-alb.tf # AWS Load Balancer Controller
-│ │ ├── ingress.tf
-│ │ ├── iam.tf
-│ │ ├── main.tf
-│ │ ├── outputs.tf
-│ │ ├── variables.tf
-│ │ └── versions.tf
-│ │
-│ ├── secrets/ # Secrets Manager → K8s secrets module
-│ │ ├── main.tf
-│ │ ├── outputs.tf
-│ │ └── variables.tf
-│ │
-│ └── vpc/ # Networking module (VPC, Subnets, NAT)
-│ ├── main.tf
-│ ├── outputs.tf
-│ ├── variables.tf
-│ └── versions.tf
+│   ├── vpc/
+│   ├── ecr/
+│   ├── eks/
+│   └── secrets/
 │
-└── README.md # You are reading this!
+└── README.md
+
 ```
 
-**📦 1. Project Summary**
+---
 
-**This project deploys the ProShop v2 MERN application onto AWS using a
-fully automated, production-ready cloud architecture.**
+## 🧰 Tools You Must Install (Local Setup) – Download Links
 
-**🔧 Application Stack (unchanged in this repository)**
+Here are the current official installation links for each required tool.
 
-- **Frontend: React + Vite + Nginx (static site served by Nginx)**
+| Tool                  | Download Link                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Git**               | [Get Git](https://git-scm.com/install/) :contentReference[oaicite:0]{index=0}                                |
+| **AWS CLI**           | [AWS CLI](https://aws.amazon.com/cli/) :contentReference[oaicite:1]{index=1}                                 |
+| **Terraform (v1.9+)** | [Install Terraform](https://developer.hashicorp.com/terraform/install) :contentReference[oaicite:2]{index=2} |
+| **kubectl**           | [Install kubectl](https://kubernetes.io/releases/download/) :contentReference[oaicite:3]{index=3}            |
+| **Helm**              | [Helm releases / install](https://github.com/helm/helm/releases) :contentReference[oaicite:4]{index=4}       |
+| **Docker (Desktop)**  | [Docker Desktop](https://www.docker.com/products/docker-desktop/) :contentReference[oaicite:5]{index=5}      |
+| **Node.js + npm**     | [Download Node.js](https://nodejs.org/en/download/) :contentReference[oaicite:6]{index=6}                    |
 
-- **Backend: Node.js + Express**
+---
 
-- **Database: MongoDB Atlas (cloud database)**
+## 🧩 Prerequisites Before Deployment
 
-- **Payments: PayPal API (sandbox mode)**
+Before running Terraform for either **dev** or **prod**, a few resources must be created manually in AWS.  
+These cannot be provisioned through Terraform because they are required _before_ Terraform initializes or retrieves state.
 
-**☁️ Cloud & DevOps Scope (what _this repo_ builds)**
+---
 
-- **Complete AWS networking (VPC, subnets, NAT, route tables)**
+### ### 🔐 1. AWS Secrets Manager — Required for Both Environments
 
-- **Amazon EKS (Kubernetes cluster + managed node group)**
+Create the following secrets **manually** in AWS Secrets Manager:
 
-- **AWS Load Balancer Controller (via Helm)**
+#### **Development Environment Secrets**
 
-- **Ingress routing (ALB → frontend + backend)**
+- `/proshop/dev/MONGO_URI`
+- `/proshop/dev/JWT_SECRET`
+- `/proshop/dev/PAYPAL_CLIENT_ID`
+- Any additional environment-specific app secrets can be found in Capstone-WebApp README.
 
-- **AWS ECR for all container images**
+#### **Production Environment Secrets**
 
-- **GitHub OIDC authentication (no static AWS keys)**
+- `/proshop/prod/MONGO_URI`
+- `/proshop/prod/JWT_SECRET`
+- `/proshop/prod/PAYPAL_CLIENT_ID`
+- Any additional production-specific secrets
 
-- **Secrets Manager → Kubernetes Secrets → Pod env variables**
+These values are pulled by EKS pods at deployment time using IRSA authentication.
 
-- **Horizontal Pod Autoscaling (CPU-based)**
+---
 
-- **CloudWatch Logs + Dashboards**
+### 📦 2. S3 Buckets for Terraform Remote State
 
-**🧰 2. Required Tools (Local Machine Setup)**
+Create **two separate S3 buckets** manually — one for each environment:
 
-**All developers working on this project must install:**
+- `capstone-team4-dev-state`
+- `capstone-team4-prod-state`
 
-**✔ Git**
+These store remote Terraform state files to prevent local corruption and ensure team collaboration.
 
-**Version control & GitHub commits.**
+_Buckets must have_:
 
-**✔ AWS CLI**
+- Versioning **enabled**
+- Block Public Access **enabled**
 
-**Authenticate and interact with AWS.  
-Installation:
-<https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html>**
+Terraform will reference these buckets in each environment's backend configuration.
 
-**✔ Terraform**
+---
 
-**Used to build the entire cloud infrastructure.  
-Installation: https://developer.hashicorp.com/terraform/downloads**
+### 🗄 3. DynamoDB Tables for State Locking
 
-**✔ kubectl**
+Create **two** DynamoDB tables manually to enable Terraform state locking:
 
-**CLI for interacting with the Kubernetes cluster.  
-Installation: <https://kubernetes.io/docs/tasks/tools/>**
+- `capstone-team4-dev-lock`
+- `capstone-team4-prod-lock`
 
-**✔ Helm**
+Each table must have a primary key:
 
-**Required to install the AWS Load Balancer Controller & Metrics
-Server.  
-Installation: <https://helm.sh/docs/intro/install/>**
+- **Partition Key:** `LockID` (String)
 
-**✔ Docker**
+Terraform uses these tables to prevent simultaneous writes to state, which protects against state corruption.
 
-**Only needed if you want to test images locally.**
+---
 
-**✔ Node.js + npm**
+**Note:**
 
-**Only needed for testing the app locally.**
+- Choose the correct installer for your operating system (Windows, macOS, Linux) and architecture (x64, ARM64) when available.
+- For tools with multiple versions (e.g., Terraform, Node.js), it is generally safe to install the ➤ latest stable or LTS version unless your project explicitly requires an older version.
+- After installation, verify each tool by running its version command (e.g., `git --version`, `terraform -v`, `kubectl version`) to ensure the installation succeeded.
 
-**🏗 3. Architecture Overview**
+---
+
+## 🧩 Environment Separation — Dev vs Prod
+
+Both environments use the same module, but configuration differs using `.tfvars` files.
+
+### **Development Environment**
+
+- Lower replica count.
+- Smaller instance types.
+- Used for testing and validation.
+
+### **Production Environment**
+
+- Higher replica count and larger nodes.
+- Designed for high availability and reliability.
+
+Environment-specific configuration files:
+
+- `dev.tfvars`
+- `prod.tfvars`
+
+---
+
+## 🏗 Architecture Overview
 
 **Below is the high-level architecture (explained simply):**
 
-**Networking Layer (VPC Module)**
+## 🏗️ VPC Module
 
-- **One VPC per environment (dev, prod)**
+The **VPC module** forms the core networking foundation of the project. It provisions a secure, isolated, and highly available network environment where all AWS resources such as EKS, ALB, and supporting services operate.
 
-- **6 subnets:**
+### 📘 Overview
 
-  - **2 Public (ALB + NAT)**
+This module creates a **custom Virtual Private Cloud (VPC)** with both **public** and **private** subnets distributed across two Availability Zones for redundancy and high availability. It configures all essential networking components—VPC, subnets, route tables, gateways, and security groups—to ensure reliable communication and strict traffic isolation.
 
-  - **2 Private-Frontend**
+### 🔧 Key Components
 
-  - **2 Private-Backend**
+- **VPC** – Custom CIDR block defined per environment (`dev` and `prod`) with DNS hostnames and DNS resolution enabled.
+- **Subnets** – Six total subnets (three tiers across two AZs):
+  - Public subnets for the ALB and NAT Gateway
+  - Private frontend subnets for EKS worker nodes
+  - Private backend subnets for internal application components
+- **Internet Gateway (IGW)** – Provides inbound and outbound connectivity for public subnets.
+- **NAT Gateway** – Deployed in a public subnet to allow private subnets secure outbound internet access without exposing them publicly.
+- **Route Tables** –
+  - Public route table routes `0.0.0.0/0` to the Internet Gateway.
+  - Private route table routes `0.0.0.0/0` through the NAT Gateway.
+- **Security Groups** –
+  - **ALB SG:** Allows inbound HTTP (port 80) from the internet and outbound to EKS nodes.
+  - **Node SG:** Allows inbound traffic only from the ALB SG and outbound HTTPS (port 443) for external dependencies.
 
-- **Internet Gateway (public)**
+### 🌐 Environment Separation
 
-- **NAT Gateway (private)**
+Both environments use this same module with **non-overlapping CIDR ranges** for complete isolation:
 
-- **Separate route tables**
+- **Development VPC:** `10.0.0.0/16`
+- **Production VPC:** `10.1.0.0/16`
 
-- **Strict security groups**
+Each environment maintains its own Terraform state for independent deployment and management.
 
-**ECR (Container Registry Module)**
+### 🧱 Networking Summary
 
-- **Stores 3 container images:**
+- Two Availability Zones ensure high availability.
+- Clear separation between public and private layers.
+- NAT Gateway secures outbound access from private nodes.
+- Backend workloads remain isolated from direct public exposure.
+- Dynamic tagging applied for environment, project, and ownership tracking.
 
-  - **frontend**
+### ✅ Outcome
 
-  - **backend**
+The VPC module delivers a **scalable, secure, and production-ready network architecture** that forms the foundation for all subsequent AWS components in this project.
 
-  - **nginx**
+---
 
-- **Dev and Prod use separate ECR repos**
+## 🐳 ECR Module (Elastic Container Registry)
 
-- **Image scanning + lifecycle policies enabled**
+The ECR module is responsible for creating and managing all Docker image repositories used in this project.  
+It is written in Terraform and designed to work for both **development** and **production** environments with the same reusable structure.
 
-**EKS (Kubernetes Cluster Module)**
+---
 
-**Inside private subnets:**
+### 📘 Overview
 
-- **EKS Control Plane (managed)**
+This module automates the setup of Amazon ECR (Elastic Container Registry) where Docker images are securely stored and scanned.  
+It ensures that all repositories follow best practices for security, maintenance, and consistency across environments.  
+Each environment (dev and prod) calls this same module with environment-specific values.
 
-- **Managed node group**
+---
 
-- **OIDC provider for IRSA**
+### ⚙️ What the Module Does
 
-- **AWS Load Balancer Controller via Helm**
+- **Creates multiple repositories** for each application service (frontend, backend, and nginx).
+- **Enables image scanning** on every image push to identify vulnerabilities automatically.
+- **Applies encryption at rest** using AES256 to protect container images stored in ECR.
+- **Implements a lifecycle policy** that deletes untagged images after 7 days and keeps only the latest tagged versions.
+- **Supports environment tagging** so each repository clearly indicates whether it belongs to dev or prod.
+- **Provides Terraform outputs** that expose repository names and URIs for integration with the CI/CD pipeline.
 
-- **Metrics Server via Helm**
+---
 
-**Application Deployment**
+### 🔐 Security and Compliance
 
-**Terraform deploys:**
+All images pushed to ECR are automatically encrypted and scanned.  
+This ensures compliance with secure container management practices.  
+The module also allows tag mutability control — mutable tags are used in development for quick testing, while immutable tags can be used in production to prevent overwriting stable images.
 
-- **Backend Deployment + Service (ClusterIP)**
+---
 
-- **Frontend Deployment + Service (ClusterIP)**
+### 🧩 Environment Separation
 
-- **Ingress:**
+Development and production environments use separate repositories to avoid conflicts and allow independent testing and deployment.  
+Each repository follows a consistent naming convention and includes environment labels for clear visibility in the AWS Console.
 
-  - **/api/\* → backend**
+---
 
-  - **/ → frontend**
+### 🔄 Lifecycle Management
 
-**Secrets Management**
+A cleanup policy keeps the storage efficient and organized:
 
-- **Secrets stored in AWS Secrets Manager**
+- Untagged images older than 7 days are automatically removed.
+- Only the 10 most recent tagged images are retained.  
+  This prevents unnecessary cost and maintains repository hygiene.
 
-- **Terraform loads them and creates Kubernetes Secrets**
+---
 
-- **Backend pods get secrets securely**
+### 🚀 CI/CD Integration
 
-- **IRSA gives the backend pod permission to read only its secret**
+The CI/CD pipeline in the **Capstone-WebApp** repository builds Docker images for all services and pushes them to ECR.  
+The workflow automatically checks which repositories (dev or prod) exist and pushes the images to the appropriate ones.  
+Each image is tagged with both the commit SHA for version tracking and the “latest” tag for convenience.  
+Authentication to AWS is handled through **GitHub OIDC**, eliminating the need for long-lived AWS access keys.
 
-**Autoscaling**
+---
 
-- **Horizontal Pod Autoscalers for:**
+### 🧱 Infrastructure Design Highlights
 
-  - **Frontend**
+- Built entirely using Terraform for automation and repeatability.
+- Uses secure defaults like AES256 encryption and vulnerability scanning.
+- Provides clean separation between environments while maintaining naming consistency.
+- Lifecycle rules ensure old images are cleaned automatically.
+- Simplifies integration with downstream services such as EKS or ECS for deployment.
 
-  - **Backend**
+---
 
-- **CPU-based scaling**
+### ✅ Summary
 
-**Monitoring**
+The ECR module provides a secure and scalable image management foundation for the entire project.  
+It combines best practices in security, automation, and lifecycle management, ensuring both development and production environments have reliable, clean, and traceable image repositories.  
+This setup supports an efficient CI/CD process where every image build is automatically stored, scanned, and versioned in AWS ECR.
 
-- **CloudWatch Logs for:**
+---
 
-  - **EKS control plane**
+## ☸️ Amazon EKS Module — Kubernetes Cluster Orchestration
 
-  - **Application logs**
+The **Amazon Elastic Kubernetes Service (EKS) module** provisions and manages a fully automated Kubernetes cluster on AWS using Terraform.  
+It handles cluster creation, networking, IAM integration, scaling, application deployment, and load balancing.  
+This module acts as the **core orchestration layer** for running all containerized components of the project.
 
-- **CloudWatch Dashboard for cluster & ALB metrics**
+---
 
-**🧩 4. How Terraform Is Organized (Modules)**
+### 🔍 Purpose of the Module
 
-**4.1 VPC Module**
+The module automates the deployment of a **production-grade Kubernetes environment**.  
+It ensures consistent, secure, and scalable infrastructure for both **development** and **production**, eliminating manual configuration effort.
 
-**Creates:**
+---
 
-- **VPC**
+### ⚙️ Key Components
 
-- **Subnets**
+### 1. **EKS Cluster and Node Groups**
 
-- **IGW + NAT**
+- Provisions a fully managed EKS control plane.
+- Launches worker nodes through managed node groups.
+- Configures autoscaling with min/max/desired node counts.
+- Deploys nodes into **private subnets** to enhance security.
 
-- **Route tables**
+### 2. **IAM and OIDC Integration**
 
-- **Security groups**
+- Creates IAM roles for the cluster and node groups.
+- Enables an OIDC provider for authentication between AWS and Kubernetes.
+- Implements **IRSA (IAM Roles for Service Accounts)** so pods can securely access AWS services (e.g., Secrets Manager) without hard-coded credentials.
 
-**All parameters come from tfvars (one file per environment).**
+### 3. **Helm-Based Add-ons**
 
-**4.2 ECR Module**
+Installs essential Kubernetes components using Helm:
 
-**Creates multiple repositories using a list input:**
+- **AWS Load Balancer Controller** – manages creation of AWS ALBs for ingress.
+- **Metrics Server** – enables resource-based autoscaling.
 
-- **AES256 encryption**
+List all Helm releases in the cluster:
 
-- **Image scanning enabled**
+```
+helm list -A
+```
 
-- **Lifecycle policy to clean old images**
+### 4. **Application Deployments**
 
-- **Tags for tracking project & environment**
+- Deploys both **frontend** (React/Nginx) and **backend** (Node/Express) applications from ECR.
+- Uses Kubernetes Services for internal communication.
+- Configures an Ingress resource for ALB routing:
+  - `/api/*` → backend service
+  - `/*` → frontend service
 
-**4.3 EKS Module**
+### 5. **Horizontal Pod Autoscaling (HPA)**
 
-**This is the largest module and contains:**
+- Scales pods automatically based on CPU utilization.
+- Ensures stable performance and cost-efficient workloads.
 
-**☑ Cluster & Node Group**
+---
 
-- **Private subnets**
+## 🧩 Useful EKS Verification Commands
 
-- **Dynamic scaling (dev vs prod)**
+Run these after updating kubeconfig.
 
-- **No hard-coded account IDs (uses aws_caller_identity)**
+### 🔹 1. Connect to the Cluster
 
-**☑ IAM & IRSA**
+`aws eks update-kubeconfig --region us-east-1 --name <cluster_name>`
 
-- **Roles for:**
+### **2. Check Cluster Nodes**
 
-  - **EKS**
+`kubectl get nodes -o wide`
 
-  - **Worker nodes**
+### **3. Verify Pods**
 
-  - **Load Balancer Controller**
+`kubectl get pods -n proshop`
 
-  - **Backend pods to read secrets**
+### **4. Check Deployments**
 
-**☑ Helm Installations**
+`kubectl get deployments -n proshop`
 
-- **Load Balancer Controller**
+### **5. Inspect Horizontal Pod Autoscalers (HPA)**
 
-- **Metrics Server**
+`kubectl get hpa -n proshop`
 
-**☑ Kubernetes Deployments**
+### **6. List Services**
 
-- **Backend deployment**
+`kubectl get svc -n proshop`
 
-- **Frontend deployment**
+### **7. View Ingress and ALB URL**
 
-- **Services**
+`kubectl get ingress -n proshop`
 
-- **Ingress routing**
+### **8. Check Backend Logs**
 
-**☑ Autoscaling**
+`kubectl logs -n proshop -l app=backend --tail=50`
 
-- **Horizontal Pod Autoscalers**
+### **9. Check Frontend Logs**
 
-- **CPU target values read from tfvars**
+`kubectl logs -n proshop -l app=frontend --tail=50`
 
-**4.4 Secrets Module**
+### **10. Describe a Pod (Detailed Debug)**
 
-**Handles:**
+`kubectl describe pod <pod_name> -n proshop`
 
-- **Reading values from AWS Secrets Manager**
+### **11. Refresh or Recreate Ingress**
 
-- **Decoding JSON**
+`kubectl delete ingress proshop-ingress -n proshop`  
+`kubectl apply -f ingress.yaml`
 
-- **Creating Kubernetes Secrets**
+### **12. Check Load Balancer Controller Logs**
 
-- **Creating service accounts with IRSA roles**
+`kubectl logs -n kube-system -l app.kubernetes.io/name=aws-load-balancer-controller`
 
-- **Injecting env vars into backend pods**
+---
 
-**🌍 5. Environments**
+### 🔐 Secrets and Configuration Management
 
-**This repository supports two separate, isolated environments:**
+- Integrates with **AWS Secrets Manager** to store sensitive configuration.
+- Terraform retrieves secrets and injects them as environment variables into Kubernetes.
+- Prevents storing any sensitive data inside Git repositories.
 
-**✔ Development (infra/envs/dev)**
+### ✅ Final Outcome
 
-- **Smaller instance sizes**
+After applying the EKS module:
 
-- **Fewer replicas**
+- A fully functional EKS cluster is deployed.
+- Applications are automatically deployed, load balanced, and autoscaled.
+- Infrastructure becomes **reproducible**, **secure**, and **fully automated** using Terraform.
 
-- **Mutable ECR tags**
+---
 
-- **Cheaper for testing**
+## ⚙️ Terraform – How to Deploy
 
-**✔ Production (infra/envs/prod)**
+**IMPORTANT:**  
+Before deploying, create your own `prod.tfvars` file and fill in all required variable values.
 
-- **Separate VPC CIDR range**
+The EKS module must be deployed **only after** the ECR repositories contain images.  
+Follow the sequence below carefully to avoid deployment errors.
 
-- **Larger node groups**
+---
 
-- **Immutable image tags**
+### ✅ Step 1 — Clone the Repository
 
-- **Unique ALB names**
+`git clone https://github.com/<your-org>/CAPSTONE-INFRA-TEAM4.git`  
+`cd infra/envs/prod`
 
-- **Separate secrets**
+---
 
-**Each environment is deployed independently with its own S3 state
-file + DynamoDB lock.**
+### ✅ Step 2 — Comment Out the EKS Module
 
-**🔐 6. Secrets & Security**
+In the `main.tf` for the **prod/dev environment**, temporarily comment out the entire EKS module block.
 
-**✔ No secrets are stored in Terraform files**
+You should only deploy:
 
-**Everything sensitive lives in AWS Secrets Manager.**
+- VPC
+- ECR
 
-**✔ Terraform reads secrets securely**
+This ensures the EKS cluster does not attempt to pull images before they exist.
 
-**Then converts them into Kubernetes Secrets.**
+---
 
-**✔ Backend pods retrieve secrets at runtime**
+### ✅ Step 3 — Initialize Terraform
 
-**A Kubernetes service account with IRSA is used.**
+`terraform init`
 
-**✔ RBAC & IAM least privilege**
+---
 
-- **Dev pods can only access dev secrets**
+### ✅ Step 4 — Deploy Only VPC + ECR
 
-- **Prod pods can only access prod secrets**
+`terraform apply -var-file="prod.tfvars"`
 
-**🚀 7. CI/CD (GitHub Actions)**
+Terraform will create:
 
-**The WebApp repo contains:**
+- VPC
+- Subnets
+- Route tables
+- Security groups
+- ECR repositories
 
-- **A workflow that:**
+**Do NOT deploy EKS yet.**
 
-  - **Builds Docker images**
+---
 
-  - **Uses GitHub → AWS OIDC authentication**
+## 🐳 Push Docker Images to ECR (Required Before EKS Deployment)
 
-  - **Pushes images to ECR (dev, prod, or both)**
+After the ECR repositories are created, you must push the latest frontend and backend images.
 
-  - **Tags every image with:**
+### ✔ Option A — Use the Team Repository (Capstone-WebApp) --> only for members who are contributors
 
-    - **Commit SHA**
+1. Go to **GitHub → Capstone-WebApp**
+2. Open the **Actions** tab
+3. Run the **latest CI/CD pipeline**
+4. Wait for it to:
+   - Build Docker images
+   - Tag them correctly
+   - Push them to your new ECR repositories
 
-    - **latest**
+---
 
-**The Infra repo contains:**
+### ✔ Option B — Use Your Own GitHub Account
 
-- **A Terraform validation pipeline:**
+If you want the pipelines under your own GitHub account:
 
-  - **terraform fmt**
+1. Fork or clone the **Capstone-WebApp** repo
+2. Add your GitHub Secrets for CI/CD:
+   - `AWS_ROLE_TO_ASSUME`
+   - `AWS_REGION`
+   - `ECR_REPO_PREFIX`
+   - Any other required variables
+3. Trigger the workflow from **your own Actions tab**
+4. Wait for the images to be pushed into your ECR repositories
 
-  - **terraform validate**
+---
 
-  - **terraform plan**
+### ⚠️ Important Warning
 
-- **Runs automatically on pull requests**
+If you deploy EKS **before** ECR has images, Kubernetes will fail to start pods because:
 
-- **Uses OIDC as well**
+- The images do not exist
+- The deployments reference non-existent tags
+- The cluster cannot pull anything from ECR
 
-- **No long-lived AWS access keys**
+This will cause ImagePullBackOff errors.
 
-**☸️ 8. Connecting to the EKS Cluster**
+---
 
-**After apply:**
+## 🚀 Step 5 — Deploy the EKS Cluster
 
-**aws eks update-kubeconfig \--region us-east-1 \--name
-capstone-proshop-eks-prod**
+Once images are confirmed in ECR:
 
-**kubectl get nodes**
+1. **Uncomment the EKS module** in `main.tf`
+2. Re-run Terraform with the same variables:
 
-**kubectl get pods -A**
+`terraform apply -var-file="prod.tfvars"`
 
-**Everything should be running:**
+Terraform will now:
 
-- **ALB Controller**
+- Create the EKS cluster
+- Provision node groups
+- Deploy the backend and frontend
+- Create Ingress + ALB
+- Attach IAM Roles via IRSA
+- Load secrets from Secrets Manager
+- Configure Horizontal Pod Autoscaling
 
-- **Metrics Server**
+---
 
-- **Frontend pods**
+Following these steps ensures the environment deploys cleanly without image-related errors.
 
-- **Backend pods**
+---
 
-- **Ingress**
+## 🌐 7. Accessing the Application
 
-**🌐 9. Accessing the Deployed Application**
+### **Get the ALB DNS Name**
 
-**Retrieve the ALB DNS:**
+`kubectl get ingress -n proshop`
 
-**kubectl get ingress -n proshop**
+Open the **ADDRESS** value (ALB hostname) in any web browser to access the application using **http://<alb_url>**.
 
-**Open the DNS in your browser.**
+---
 
-**The app should fully work:**
+## 🔐 Security Best Practices Used
 
-- **Login / Register**
+This deployment follows multiple production-grade security practices:
 
-- **Product browsing**
+- Fully private EKS worker nodes
+- Only the ALB is publicly reachable
+- IRSA (IAM Roles for Service Accounts) for secure pod identity
+- No AWS access keys stored in pods or images
+- Sensitive data stored securely in Secrets Manager
+- Terraform state stored remotely in S3 with DynamoDB locking
+- Immutable ECR tags in production
+- Kubernetes namespaces used for logical isolation
+- Autoscaling protects application performance under load
 
-- **Add to cart**
+---
 
-- **Checkout using PayPal Sandbox**
+## 🧹 9. Cleanup
 
-**📉 10. Autoscaling (HPA)**
+Terraform destroy can occasionally fail with **context deadline exceeded**, especially when Kubernetes resources (like Ingress) have stuck finalizers.  
+Use the following cleanup procedure to safely and fully destroy the infrastructure.
 
-**HPAs monitor CPU usage.**
+---
 
-**To observe scaling:**
+### **Step 1 — Identify any blocking finalizers**
 
-**kubectl get hpa -n proshop**
+Finalizers may prevent Terraform from deleting Kubernetes resources.  
+Check the Ingress resource:
 
-**kubectl get pods -n proshop**
+`kubectl get ingress proshop-ingress -n proshop -o yaml`
 
-**Under load:**
+---
 
-- **Frontend scales from 2 → 6 pods**
+### **Step 2 — Remove stuck finalizers (Recommended)**
 
-- **Backend scales from 2 → 6 pods**
+If the Ingress contains a `finalizers:` section, remove it.
+Run the below command in **Bash** terminal:
 
-**This ensures high availability and low latency.**
+`kubectl patch ingress proshop-ingress -n proshop -p '{"metadata":{"finalizers":[]}}' --type=merge`
 
-**📊 11. Monitoring & Logs**
+To ensure Terraform does not continue tracking the stuck namespace resource:
 
-**Enabled components:**
+`terraform state rm module.eks.kubernetes_namespace.proshop`
 
-- **CloudWatch Logs for:**
+---
 
-  - **App logs**
+### **Step 3 — Verify deletion**
 
-  - **EKS control plane**
+Confirm that the Ingress has been successfully removed:
 
-- **CloudWatch Dashboards for:**
+`kubectl get ingress -n proshop`
 
-  - **Cluster CPU**
+---
 
-  - **ALB requests**
+### **Step 4 — Run Terraform destroy again**
 
-  - **Pod usage**
+Re-run the destroy command:
 
-  - **HPA activity**
+`terraform destroy -var-file="prod.tfvars"`
 
-**You can extend this with:**
+Terraform will then successfully delete:
 
-- **Prometheus + Grafana (future improvement)**
+- VPC
+- Subnets
+- NAT Gateway
+- EKS Cluster
+- ALB
+- All Kubernetes workloads and associated resources
 
-- **Alarms (CPU, 5xx errors)**
+**Note:** Images under ECR are not automatically deleted and must be removed manually.
 
-**🧹 12. Cleanup**
+---
 
-**Destroy environment:**
+### **Step 5 — If the state is locked, force unlock it**
 
-**terraform destroy -var-file=\"prod.tfvars\"**
+If Terraform gets stuck due to a lock:
 
-**Deletes:**
+`terraform force-unlock <LOCK_ID>`
 
-- **VPC**
+This ensures the state can continue with deletion or re-runs without interruption.
 
-- **EKS**
+---
 
-- **ALB**
+## 🚀 Future Enhancements
 
-- **IAM roles**
+Optional improvements that can be added later:
 
-- **All Kubernetes resources**
+- Route 53 domain integration + HTTPS certificates
+- Prometheus + Grafana monitoring stack
+- Karpenter or Cluster Autoscaler for smarter scaling
+- Multi-node-group architecture (compute-optimized, memory-optimized, etc.)
+- Blue/Green or Canary deployment strategies
+- Argo CD for full GitOps automation
 
-**ECR repositories remain safely intact unless explicitly destroyed.**
+---
 
-**📌 13. Future Enhancements**
+## 🏁 11. Summary
 
-**Optional improvements:**
+This project demonstrates a complete, production-style deployment of a cloud-native e-commerce application using AWS and modern DevOps tooling.
 
-- **Route 53 + HTTPS (ACM certificates)**
+By the end of this setup, you have:
 
-- **Prometheus & Grafana monitoring stack**
+- Secure private VPC networking
+- Automated container image builds
+- Reliable and secure ECR storage
+- A production-ready EKS cluster with autoscaling
+- Traffic routed through an ALB ingress
+- Secrets stored securely in AWS Secrets Manager
+- CI/CD pipelines powered by GitHub Actions OIDC
+- Separation of **development** and **production** environments
 
-- **Cluster Autoscaler**
-
-- **Argo CD (GitOps)**
-
-- **Velero backups**
-
-- **Multiple node groups (frontend vs backend)**
-
-- **Cost optimization via Karpenter**
-
-**🏁 14. Summary**
-
-**This repository builds a real-world, production-grade cloud
-architecture using Terraform modules and Kubernetes on AWS.**
-
-**You learned how to:**
-
-- **Design multi-environment networking**
-
-- **Containerize and deploy microservices**
-
-- **Use ECR, EKS, ALB, IRSA, Secrets Manager**
-
-- **Automate deployments with GitHub Actions**
-
-- **Implement HPA for auto-scaling**
-
-- **Monitor workloads with CloudWatch**
-
-**The entire infrastructure is modular, reusable, secure, scalable, and
-fully automated.**
+This is a full end-to-end cloud deployment — the same style of architecture used by real-world companies running Kubernetes at scale.
