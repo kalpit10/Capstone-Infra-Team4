@@ -173,6 +173,17 @@ resource "aws_security_group" "nodes" {
     security_groups = [aws_security_group.alb.id]
   }
 
+  # Allow control plane (or self) to communicate with kubelet on port 10250
+  ingress {
+    description = "Allow EKS control plane to reach kubelet"
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    # Allow any instances associated with this same security group to talk to each other.
+    self = true
+  }
+
+
   # Outbound: allow internet (for Atlas, PayPal, npm, etc.)
   egress {
     description = "Allow outbound HTTPS"
